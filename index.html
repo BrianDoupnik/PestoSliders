@@ -1,21 +1,141 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
-    <title>Caitlin's Paycheck Calculator</title>
+	<meta charset='utf-8'>
+    <title>Paycheck Calculator</title>
   </head>
   <body>
-    <h1>Paycheck Calculator</h1>
+    <h1>&#x1F33B; Paycheck Calculator &#x1F33B;</h1>
     <p>
       Hey baby girl, I love you so much.
 	  Go ahead and put in your work info below!
     </p>
-	<form>
-		<label> Productivity: </label>
-		<input type="number"/><br>
-		<label> Start Time: </label>
-		<input type="time"/><br>
-		<label> End Time: </label>
-		<input type="time"/><br>
-	</form>
+	<br>
+	<label for="numDays"> How many days did you work? </label>
+	<input type="number" id="numDays" oninput = "addDays()"/> 
+	<br>
+	
+	<ul id = "listOfDays">
+	</ul>
+	
+	<button onClick="calculatePaycheck()" > Calculate </button>
+	<h2 id="displayResult" />
+	
+	<script>
+	function addDays() {
+		document.getElementById("listOfDays").innerHTML = "";
+		var x = document.getElementById("numDays").value;
+		var i;
+		for(i = 0; i < x; i++) {
+			var node = document.createElement("LI");
+			node.id = "day"+i
+			node.innerHTML = (
+				'<label for="day'+i+'start"> Start Time: </label>' +
+				'<input type="time" id="day' + i + 'start" />' +
+				'<label for="day'+i+'end"> End Time: </label>' +
+				'<input type="time" id="day' + i + 'end" />' +
+				'<label for="day'+i+'sales"> Day Sales: </label>' +
+				'<input type="number" id="day' + i + 'sales" />' +
+				'<label for="day'+i+'break"> Break? </label>' +
+				'<input type="checkbox" id="day' + i + 'break" onclick="addBreak(' + i + ')" />'
+			);
+			
+			document.getElementById("listOfDays").appendChild(node);
+		}
+	}
+	
+	function addBreak(dayNumber){
+		if (document.getElementById("day"+dayNumber+"break").checked == true){
+			var day = document.getElementById("day"+dayNumber);
+			
+			var breakStartLabel = document.createElement("label");
+			breakStartLabel.innerHTML = " Break Start: ";
+			breakStartLabel.id = "day" + dayNumber + "breakstartlabel";
+			breakStartLabel.for = "day" + dayNumber + "breakstart";
+			var breakStartTime = document.createElement("input");
+			breakStartTime.type = "time";
+			breakStartTime.id = "day" + dayNumber + "breakstart";
+			
+			var breakEndLabel = document.createElement("label");
+			breakEndLabel.innerHTML = " Break End: ";
+			breakEndLabel.id = "day" + dayNumber + "breakendlabel";
+			breakEndLabel.for = "day" + dayNumber + "breakend";
+			var breakEndTime = document.createElement("input");
+			breakEndTime.type = "time";
+			breakEndTime.id = "day" + dayNumber + "breakend";
+			
+			day.appendChild(breakStartLabel);
+			day.appendChild(breakStartTime);
+			day.appendChild(breakEndLabel);
+			day.appendChild(breakEndTime);
+		}
+		else
+		{
+			document.getElementById("day"+dayNumber+"breakstartlabel").remove();
+			document.getElementById("day"+dayNumber+"breakstart").remove();
+			document.getElementById("day"+dayNumber+"breakendlabel").remove();
+			document.getElementById("day"+dayNumber+"breakend").remove();
+		}
+	}
+	
+	function calculatePaycheck() {
+		var days = document.getElementById("listOfDays").getElementsByTagName('li');
+		var totalSales = 0;
+		var totalHours = 0;
+		var totalMinutes = 0;
+		var i;
+		for(i = 0; i < days.length; i++){
+			totalSales += parseInt(document.getElementById("day"+i+"sales").value);
+			
+			var shiftHours = 
+				parseInt(document.getElementById("day"+i+"end").value.substring(0,2)) - 
+				parseInt(document.getElementById("day"+i+"start").value.substring(0,2)); //shift hours end - shift hours start
+			var breakHours = 0;
+			if (document.getElementById("day"+i+"break").checked == true) {
+				breakHours = 
+				parseInt(document.getElementById("day"+i+"breakend").value.substring(0,2)) - 
+				parseInt(document.getElementById("day"+i+"breakstart").value.substring(0,2)); //break hours end - break hours start
+			}
+			shiftHours -= breakHours;
+			
+			var shiftMinutes = 
+				parseInt(document.getElementById("day"+i+"end").value.substring(3,5)) - 
+				parseInt(document.getElementById("day"+i+"start").value.substring(3,5)); //shift minutes end - shift minutes start
+			var breakMinutes = 0;
+			if (document.getElementById("day"+i+"break").checked == true) {
+				breakMinutes = 
+				parseInt(document.getElementById("day"+i+"breakend").value.substring(3,5)) - 
+				parseInt(document.getElementById("day"+i+"breakstart").value.substring(3,5)); //break minutes end - break minutes start
+			}
+			shiftMinutes -= breakMinutes;
+			
+			totalHours += shiftHours;
+			totalMinutes += shiftMinutes;
+		}
+
+		totalMinutes = totalMinutes.toFixed(3);
+		totalMinutes = totalMinutes / 60;
+		
+		var totalTime = totalHours + totalMinutes;
+		var productivity = totalSales/totalTime;
+		
+		var commission = 0;
+		if( productivity > 170 ) {
+			commission = 0.85 + 0.15 * Math.floor((productivity - 170) / 5);
+		}
+		var basePlusCommission = 11.75 + commission;
+		var totalPay = basePlusCommission * totalTime;
+		
+		console.log(totalSales);
+		console.log(totalTime);
+		console.log(productivity);
+		console.log(commission);
+		console.log(basePlusCommission);
+		
+		document.getElementById("displayResult").innerHTML = "Expected Check Value: " + totalPay;
+	}
+	
+	</script>
+	
   </body>
 </html>
